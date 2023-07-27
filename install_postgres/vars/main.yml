@@ -1,0 +1,4 @@
+---
+postgres_version: 14.8
+postgres_install_dir: /home/postgres/pgsql
+postgres_initalize_data_dir: /home/postgres/pgdata

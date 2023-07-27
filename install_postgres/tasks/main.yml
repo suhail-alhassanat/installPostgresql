@@ -1,0 +1,63 @@
+---
+- name: install required packages for postgresql
+  package:
+    name:
+      - zlib-devel
+      - zlib
+      - readline-devel
+      - readline
+    state: present
+
+- name: create postgres user
+  user:
+    name: postgres
+    createhome: yes
+    home: /home/postgres
+    
+
+- name: download postgresql from source and unarchive it
+  unarchive:
+    src: https://ftp.postgresql.org/pub/source/v{{ postgres_version }}/postgresql-{{ postgres_version }}.tar.gz
+    dest: /tmp
+    remote_src: yes
+    creates: "/tmp/postgresql-{{ postgres_version }}"
+
+- name: run the configure script
+  command: "./configure --prefix={{ postgres_install_dir }}"
+  args:
+    chdir: "/tmp/postgresql-{{ postgres_version }}"
+
+- name: run the make command
+  command: make
+  args:
+    chdir: "/tmp/postgresql-{{ postgres_version }}"
+    creates: "{{ postgres_install_dir }}/bin/pg_ctl"
+
+- name: run the make install command
+  command: make install
+  args:
+    chdir: "/tmp/postgresql-{{ postgres_version }}"
+    creates: "{{ postgres_install_dir }}/bin/pg_ctl"
+
+- name: create a directory for postgresql data
+  file: 
+    path: "{{ postgres_initalize_data_dir }}"
+    state: directory
+    owner: postgres
+        
+- name: initializing postgresql data
+  become: yes
+  become_user: postgres
+  command: "./initdb -E utf8 -D {{ postgres_initalize_data_dir }}"
+  args:
+    chdir: "{{ postgres_install_dir }}/bin"
+    creates: "{{ postgres_initalize_data_dir }}/postgresql.conf"
+    
+- name: copy postgresql service file to target machines
+  copy:
+    src: postgresql.service
+    dest: /etc/systemd/system/postgresql.service
+  notify:
+    - reload_systemctl_daemon
+    - start_postgresql
+    

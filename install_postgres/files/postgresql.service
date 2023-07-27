@@ -1,0 +1,16 @@
+[Unit]
+Description=PostgreSQL database server
+After=network.target
+
+[Service]
+Type=forking
+User=postgres
+Group=postgres
+ExecStart=/home/postgres/pgsql/bin/pg_ctl start -D /home/postgres/pgdata -s -w -t 300
+ExecStop=/home/postgres/pgsql/bin/pg_ctl stop -D /home/postgres/pgdata -s -m fast
+ExecReload=/home/postgres/pgsql/bin/pg_ctl reload -D /home/postgres/pgdata -s
+TimeoutSec=300
+
+[Install]
+WantedBy=multi-user.target
+

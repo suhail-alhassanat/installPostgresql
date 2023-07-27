@@ -1,0 +1,9 @@
+---
+- name: reload_systemctl_daemon
+  command: systemctl daemon-reload
+
+- name: start_postgresql
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
